@@ -411,6 +411,7 @@ int main(void){
 		main_end_of_test:
 		printf("Please unplug the card.\n\r");
 		while (CTRL_NO_PRESENT != sd_mmc_check(0)) {
+			printf("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
 		}
 	}
 }

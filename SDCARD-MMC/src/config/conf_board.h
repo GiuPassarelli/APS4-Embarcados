@@ -60,4 +60,7 @@
 
 #define CONF_HSMCI_XDMAC_CHANNEL  XDAMC_CHANNEL_HWID_HSMCI
 
+/** Enable TWIHS port. */
+#define CONF_BOARD_TWIHS0
+
 #endif /* CONF_BOARD_H_INCLUDED */
