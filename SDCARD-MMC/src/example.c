@@ -398,20 +398,20 @@ int main(void){
 		}
 		printf("[OK]\r\n");
 
-		printf("Write to test file (f_puts)...\r\n");
-		if (0 == f_puts("Test SD/MMC stack\n", &file_object)) {
-			f_close(&file_object);
-			printf("[FAIL]\r\n");
-			goto main_end_of_test;
-		}
-		printf("[OK]\r\n");
-		f_close(&file_object);
-		printf("Test is successful.\n\r");
-
 		main_end_of_test:
 		printf("Please unplug the card.\n\r");
 		while (CTRL_NO_PRESENT != sd_mmc_check(0)) {
-			printf("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
+			printf("Write to test file (f_puts)...\r\n");
+			if (0 == f_puts("Test SD/MMC stack\n", &file_object)) {
+				f_close(&file_object);
+				printf("[FAIL]\r\n");
+				goto main_end_of_test;
+			}
+			printf("[OK]\r\n");
+			f_close(&file_object);
+			printf("Test is successful.\n\r");
 		}
+		
+		
 	}
 }
