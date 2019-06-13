@@ -65,6 +65,21 @@
 #include <ffconf.h>
 #include <integer.h>
 
+// From module: FreeRTOS - kernel 8.2.3
+#include <FreeRTOS.h>
+#include <StackMacros.h>
+#include <croutine.h>
+#include <deprecated_definitions.h>
+#include <event_groups.h>
+#include <list.h>
+#include <mpu_wrappers.h>
+#include <portable.h>
+#include <projdefs.h>
+#include <queue.h>
+#include <semphr.h>
+#include <task.h>
+#include <timers.h>
+
 // From module: GPIO - General purpose Input/Output
 #include <gpio.h>
 

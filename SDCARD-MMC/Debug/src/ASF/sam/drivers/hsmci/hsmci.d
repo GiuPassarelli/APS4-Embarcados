@@ -160,6 +160,29 @@ src/ASF/sam/drivers/hsmci/hsmci.d src/ASF/sam/drivers/hsmci/hsmci.o: \
  ../src/config/conf_fatfs.h \
  ../src/ASF/thirdparty/fatfs/fatfs-r0.09/src/ffconf.h \
  ../src/ASF/thirdparty/fatfs/fatfs-r0.09/src/integer.h \
+ ../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include/FreeRTOS.h \
+ ../src/config/FreeRTOSConfig.h \
+ ../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include/projdefs.h \
+ ../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include/portable.h \
+ ../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include/deprecated_definitions.h \
+ ../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/portable/GCC/ARM_CM7/r0p1/portmacro.h \
+ ../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include/mpu_wrappers.h \
+ ../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include/StackMacros.h \
+ ../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include/croutine.h \
+ ../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include/list.h \
+ ../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include/deprecated_definitions.h \
+ ../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include/event_groups.h \
+ ../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include/timers.h \
+ ../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include/task.h \
+ ../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include/list.h \
+ ../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include/mpu_wrappers.h \
+ ../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include/portable.h \
+ ../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include/projdefs.h \
+ ../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include/queue.h \
+ ../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include/semphr.h \
+ ../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include/queue.h \
+ ../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include/task.h \
+ ../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include/timers.h \
  ../src/ASF/common/services/gpio/gpio.h \
  ../src/ASF/common/services/gpio/sam_gpio/sam_gpio.h \
  ../src/ASF/sam/drivers/pio/pio.h ../src/ASF/sam/drivers/hsmci/hsmci.h \
@@ -514,6 +537,52 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 ../src/ASF/thirdparty/fatfs/fatfs-r0.09/src/ffconf.h:
 
 ../src/ASF/thirdparty/fatfs/fatfs-r0.09/src/integer.h:
+
+../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include/FreeRTOS.h:
+
+../src/config/FreeRTOSConfig.h:
+
+../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include/projdefs.h:
+
+../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include/portable.h:
+
+../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include/deprecated_definitions.h:
+
+../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/portable/GCC/ARM_CM7/r0p1/portmacro.h:
+
+../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include/mpu_wrappers.h:
+
+../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include/StackMacros.h:
+
+../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include/croutine.h:
+
+../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include/list.h:
+
+../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include/deprecated_definitions.h:
+
+../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include/event_groups.h:
+
+../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include/timers.h:
+
+../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include/task.h:
+
+../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include/list.h:
+
+../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include/mpu_wrappers.h:
+
+../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include/portable.h:
+
+../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include/projdefs.h:
+
+../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include/queue.h:
+
+../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include/semphr.h:
+
+../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include/queue.h:
+
+../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include/task.h:
+
+../src/ASF/thirdparty/freertos/freertos-8.2.3/Source/include/timers.h:
 
 ../src/ASF/common/services/gpio/gpio.h:
 
