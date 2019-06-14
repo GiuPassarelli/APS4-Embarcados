@@ -12,6 +12,8 @@ src\ASF\common\services\delay\sam\cycle_counter.c
 
 src\ASF\common\services\serial\usart_serial.c
 
+src\ASF\common\services\sleepmgr\sam\sleepmgr.c
+
 src\ASF\common\services\storage\ctrl_access\ctrl_access.c
 
 src\ASF\common\utils\interrupt\interrupt_sam_nvic.c

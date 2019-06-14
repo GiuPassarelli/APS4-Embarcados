@@ -254,165 +254,6 @@ void RTC_Handler(void)
 #define TASK_SDCARD_STACK_PRIORITY          (tskIDLE_PRIORITY)
 
 
-void task_sensor(void){	
-	xQueueTerminal = xQueueCreate( 10, sizeof( uint32_t ) );
-	xQueueSdcard = xQueueCreate( 10, sizeof( uint32_t ) );
-	
-	/* Inicializa i2c */
-	printf("Inicializando bus i2c \n");
-	bme280_i2c_bus_init();
-	delay_ms(10);
-	
-	/* verificando presenca do chip */
-	while(bme280_validate_id()){
-		printf("Chip nao encontrado\n");
-		delay_ms(200);
-	}
-	
-	printf("Chip encontrado, inicializando temperatura \n");
-	bme280_i2c_config_temp();
-	
-	uint temp;
-	uint humd;
-	uint prss;
-	char frase[50];
-	
-	while (true) {
-		if (bme280_i2c_read_temp(&temp)){
-			sprintf(frase, "erro readinG temperature \n");
-		}else{
-			sprintf(frase, "Temperatura: %d \n", temp/100);
-		}
-		xQueueSendToBackFromISR(xQueueTerminal, &frase, 0);
-		xQueueSendToBackFromISR(xQueueSdcard, &frase, 0);
-		
-		if (bme280_i2c_read_humd(&humd)){
-			sprintf(frase, "erro reading humidade \n");
-		}else{
-			sprintf(frase, "Humidade: %d \n", humd/100);
-		}
-		xQueueSendToBackFromISR(xQueueTerminal, &frase, 0);
-		xQueueSendToBackFromISR(xQueueSdcard, &frase, 0);
-		
-		if (bme280_i2c_read_prss(&prss)){
-			sprintf(frase, "erro reading pressao \n");
-		}else{
-			sprintf(frase, "Pressao: %d \n", humd/100);
-		}
-		xQueueSendToBackFromISR(xQueueTerminal, &frase, 0);
-		xQueueSendToBackFromISR(xQueueSdcard, &frase, 0);
-		//vTaskDelay(4000);
-	}
-}
-
-void task_terminal(void){
-	printf("OLA T");
-	xSemaphoreT = xSemaphoreCreateBinary();
-	
-	if (xSemaphoreT == NULL)
-		printf("falha em criar o semaforo \n");
-		
-	int print_mode = 1;
-	char frase[50];
-	
-	while (true) {
-		if( xSemaphoreTake(xSemaphoreT, ( TickType_t ) 10) == pdTRUE ){
-			print_mode = !print_mode;
-		}
-		if (xQueueReceive( xQueueTerminal, &(frase), ( TickType_t )  500 / portTICK_PERIOD_MS)) {
-			printf("%s", frase);
-		}
-		//printf("Starting ADC\n");
-		vTaskDelay(4000);
-	}
-}
-
-void task_sdcard(void){
-	printf("OLA SD");
-	xSemaphoreSD = xSemaphoreCreateBinary();
-	
-	if (xSemaphoreSD == NULL)
-		printf("falha em criar o semaforo \n");
-	
-	char test_file_name[] = "0:sd_mmc_test.txt";
-	Ctrl_status status;
-	FRESULT res;
-	FATFS fs;
-	FIL file_object;
-	
-	/* Initialize SD MMC stack */
-	sd_mmc_init();
-
-	printf("\x0C\n\r-- SD/MMC/SDIO Card Example on FatFs --\n\r");
-	printf("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
-	
-	uint written;
-	FIL fdst;
-	DWORD size;
-	int save_mode = 0;
-	
-	while (true) {
-		if( xSemaphoreTake(xSemaphoreSD, ( TickType_t ) 10) == pdTRUE ){
-			save_mode = !save_mode;
-		}
-		
-		if(save_mode){
-			printf("Please plug an SD, MMC or SDIO card in slot.\n\r");
-
-			/* Wait card present and ready */
-			do {
-				status = sd_mmc_test_unit_ready(0);
-				if (CTRL_FAIL == status) {
-					printf("Card install FAIL\n\r");
-					printf("Please unplug and re-plug the card.\n\r");
-					while (CTRL_NO_PRESENT != sd_mmc_check(0)) {
-					}
-				}
-			} while (CTRL_GOOD != status);
-
-			printf("Mount disk (f_mount)...\r\n");
-			memset(&fs, 0, sizeof(FATFS));
-			res = f_mount(LUN_ID_SD_MMC_0_MEM, &fs);
-			if (FR_INVALID_DRIVE == res) {
-				printf("[FAIL] res %d\r\n", res);
-				goto main_end_of_test;
-			}
-			printf("[OK]\r\n");
-
-			printf("Create a file (f_open)...\r\n");
-			test_file_name[0] = LUN_ID_SD_MMC_0_MEM + '0';
-			res = f_open(&file_object, (char const *)test_file_name, FA_OPEN_ALWAYS | FA_WRITE);
-		
-			if (res != FR_OK) {
-				printf("[FAIL] res %d\r\n", res);
-				goto main_end_of_test;
-			}
-			printf("[OK]\r\n");
-
-			main_end_of_test:
-			printf("Please unplug the card.\n\r");
-			while (CTRL_NO_PRESENT != sd_mmc_check(0)) {
-				printf("Write to test file (f_puts)...\r\n");
-				size = (&file_object)->fsize;
-				res = f_lseek(&file_object,size);
-				if (0 == f_write(&file_object, "Test SD/MMC stack\n", 18, &written)) {
-					f_close(&file_object);
-					printf("[FAIL]\r\n");
-					goto main_end_of_test;
-				}
-				//written += 18;
-				printf("[OK]\r\n");
-				f_close(&file_object);
-				printf("Test is successful.\n\r");
-				delay_s(2);
-			}
-		}
-		
-		//vTaskDelay(4000);
-	}
-}
-
-
 /************************************************************************/
 /* Funcoes                                                              */
 /************************************************************************/
@@ -549,14 +390,179 @@ extern void vApplicationMallocFailedHook(void)
 	configASSERT( ( volatile void * ) NULL );
 }
 
+void task_sensor(void){
+	xQueueTerminal = xQueueCreate( 10, sizeof( char ) * 10);
+	xQueueSdcard = xQueueCreate( 10, sizeof( char ) * 10 );
+	
+	/* Inicializa i2c */
+	printf("Inicializando bus i2c \n");
+	bme280_i2c_bus_init();
+	delay_ms(10);
+	
+	/* verificando presenca do chip */
+	while(bme280_validate_id()){
+		printf("Chip nao encontrado\n");
+		delay_ms(200);
+	}
+	
+	printf("Chip encontrado, inicializando temperatura \n");
+	bme280_i2c_config_temp();
+	
+	uint temp;
+	uint humd;
+	uint prss;
+	char frase[10];
+	
+	while (true) {
+		if (bme280_i2c_read_temp(&temp)){
+			sprintf(frase, "erro readinG temperature \n");
+		}else{
+			sprintf(frase, "T: %d \r\n", temp/100);
+			//printf("%s", frase);
+		}
+		xQueueSendToBackFromISR(xQueueTerminal, &frase, 0);
+		xQueueSendToBackFromISR(xQueueSdcard, &frase, 0);
+		vTaskDelay(400);
+		
+		if (bme280_i2c_read_humd(&humd)){
+			sprintf(frase, "erro reading humidade \r\n");
+			}else{
+			sprintf(frase, "H: %d \r\n", humd/100);
+		}
+		xQueueSendToBackFromISR(xQueueTerminal, &frase, 0);
+		xQueueSendToBackFromISR(xQueueSdcard, &frase, 0);
+		vTaskDelay(400);
+		
+		if (bme280_i2c_read_prss(&prss)){
+			sprintf(frase, "erro reading pressao \n");
+			}else{
+			sprintf(frase, "P: %d \n", humd/100);
+		}
+		xQueueSendToBackFromISR(xQueueTerminal, &frase, 0);
+		xQueueSendToBackFromISR(xQueueSdcard, &frase, 0);
+		vTaskDelay(400);
+	}
+}
+
+void task_terminal(void){				
+	int print_mode = 0;
+	char frase[6];
+	
+	while (true) {
+		//printf("TO no while t\r\n");
+		if( xSemaphoreTake(xSemaphoreT, ( TickType_t ) 10) == pdTRUE ){
+			//printf("OLAAAAAAAAAAAAAAAAAA\n");
+			print_mode = !print_mode;
+		}
+		if (xQueueReceive( xQueueTerminal, &(frase), ( TickType_t )  500 / portTICK_PERIOD_MS)) {
+			printf("%s\n", frase);
+		}
+		if(print_mode){
+			//printf("PRINTANDO\r\n");
+		}
+		//printf("Starting ADC\n");
+		vTaskDelay(400);
+	}
+}
+
+void task_sdcard(void){		
+	char test_file_name[] = "0:sd_mmc_test.txt";
+	Ctrl_status status;
+	FRESULT res;
+	FATFS fs;
+	FIL file_object;
+	
+	const usart_serial_options_t usart_serial_options = {
+		.baudrate   = CONF_TEST_BAUDRATE,
+		.charlength = CONF_TEST_CHARLENGTH,
+		.paritytype = CONF_TEST_PARITY,
+		.stopbits   = CONF_TEST_STOPBITS,
+	};
+	
+	irq_initialize_vectors();
+	cpu_irq_enable();
+
+	stdio_serial_init(CONF_TEST_USART, &usart_serial_options);
+	
+	/* Initialize SD MMC stack */
+	sd_mmc_init();
+
+	printf("\x0C\n\r-- SD/MMC/SDIO Card Example on FatFs --\n\r");
+	printf("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
+	
+	uint written;
+	FIL fdst;
+	DWORD size;
+	int save_mode = 0;
+	
+	while (true) {
+		//printf("TO no while sd\r\n");
+		if( xSemaphoreTake(xSemaphoreSD, ( TickType_t ) 10) == pdTRUE ){
+			save_mode = !save_mode;
+		}
+		
+		if(save_mode){
+			printf("Please plug an SD, MMC or SDIO card in slot.\n\r");
+
+			/* Wait card present and ready */
+			do {
+				status = sd_mmc_test_unit_ready(0);
+				if (CTRL_FAIL == status) {
+					printf("Card install FAIL\n\r");
+					printf("Please unplug and re-plug the card.\n\r");
+					while (CTRL_NO_PRESENT != sd_mmc_check(0)) {
+					}
+				}
+			} while (CTRL_GOOD != status);
+
+			printf("Mount disk (f_mount)...\r\n");
+			memset(&fs, 0, sizeof(FATFS));
+			res = f_mount(LUN_ID_SD_MMC_0_MEM, &fs);
+			if (FR_INVALID_DRIVE == res) {
+				printf("[FAIL] res %d\r\n", res);
+				goto main_end_of_test;
+			}
+			printf("[OK]\r\n");
+
+			printf("Create a file (f_open)...\r\n");
+			test_file_name[0] = LUN_ID_SD_MMC_0_MEM + '0';
+			res = f_open(&file_object, (char const *)test_file_name, FA_OPEN_ALWAYS | FA_WRITE);
+			
+			if (res != FR_OK) {
+				printf("[FAIL] res %d\r\n", res);
+				goto main_end_of_test;
+			}
+			printf("[OK]\r\n");
+
+			main_end_of_test:
+			printf("Please unplug the card.\n\r");
+			while (CTRL_NO_PRESENT != sd_mmc_check(0)) {
+				printf("Write to test file (f_puts)...\r\n");
+				size = (&file_object)->fsize;
+				res = f_lseek(&file_object,size);
+				if (0 == f_write(&file_object, "Test SD/MMC stack\n", 18, &written)) {
+					f_close(&file_object);
+					printf("[FAIL]\r\n");
+					goto main_end_of_test;
+				}
+				//written += 18;
+				printf("[OK]\r\n");
+				f_close(&file_object);
+				printf("Test is successful.\n\r");
+				delay_s(2);
+			}
+		}
+		
+		//vTaskDelay(4000);
+	}
+}
+
 /************************************************************************/
 /* Main Code	                                                        */
 /************************************************************************/
 int main(void){
 	
-////////////////////////////////////////////////////////////////////////////
   RTC_init();
-////////////////////////////////////////////////////////////////////////////
   
   /* buffer para recebimento de dados */
   uint8_t bufferRX[100];
@@ -567,6 +573,15 @@ int main(void){
   /* Initialize the SAM system */
   sysclk_init();
   board_init();
+  
+  xSemaphoreT = xSemaphoreCreateBinary();
+  xSemaphoreSD = xSemaphoreCreateBinary();
+  
+  /* Configura Leds */
+  LED_init(1);
+  
+  /* Configura os bot?es */
+  BUT_init();
    
   /* Disable the watchdog */
   WDT->WDT_MR = WDT_MR_WDDIS;
@@ -577,18 +592,6 @@ int main(void){
   
   /* Inicializa funcao de delay */
   delay_init( sysclk_get_cpu_hz());
-   
-   const usart_serial_options_t usart_serial_options = {
-	   .baudrate   = CONF_TEST_BAUDRATE,
-	   .charlength = CONF_TEST_CHARLENGTH,
-	   .paritytype = CONF_TEST_PARITY,
-	   .stopbits   = CONF_TEST_STOPBITS,
-   };
-  
-   irq_initialize_vectors();
-   cpu_irq_enable();
-
-   stdio_serial_init(CONF_TEST_USART, &usart_serial_options);
   
   if (xTaskCreate(task_sensor, "sensor", TASK_SENSOR_STACK_SIZE, NULL, TASK_SENSOR_STACK_PRIORITY, NULL) != pdPASS) {
 	  printf("Failed to create test led task\r\n");
@@ -606,15 +609,10 @@ int main(void){
 	/* Start the scheduler. */
 	vTaskStartScheduler();
 	
-	/* Configura Leds */
-	LED_init(1);
-	
-	/* Configura os bot?es */
-	BUT_init();
 
 	while (1) {
-		pin_toggle(LED_PIO, LED_PIN_MASK);
-		delay_ms(1000);
+		//pin_toggle(LED_PIO, LED_PIN_MASK);
+		//delay_ms(1000);
 	}
 	return 0;
 }

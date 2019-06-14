@@ -126,6 +126,10 @@
 // From module: SD/MMC stack on Multimedia Card interface
 #include <sd_mmc.h>
 
+// From module: Sleep manager - SAM implementation
+#include <sam/sleepmgr.h>
+#include <sleepmgr.h>
+
 // From module: Standard serial I/O (stdio) - SAM implementation
 #include <stdio_serial.h>
 

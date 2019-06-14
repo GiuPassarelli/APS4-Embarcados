@@ -197,6 +197,10 @@ src/example.d src/example.o: ../src/example.c ../src/asf.h \
  ../src/ASF/sam/boards/same70_xplained/led.h \
  ../src/ASF/common/components/memory/sd_mmc/sd_mmc.h \
  ../src/config/conf_sd_mmc.h \
+ ../src/ASF/common/services/sleepmgr/sam/sleepmgr.h \
+ ../src/config/conf_sleepmgr.h \
+ ../src/ASF/common/services/sleepmgr/sleepmgr.h \
+ ../src/ASF/common/services/sleepmgr/sam/sleepmgr.h \
  ../src/ASF/common/utils/stdio/stdio_serial/stdio_serial.h \
  ../src/ASF/common/services/serial/serial.h \
  ../src/ASF/common/services/serial/sam_uart/uart_serial.h \
@@ -619,6 +623,14 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 ../src/ASF/common/components/memory/sd_mmc/sd_mmc.h:
 
 ../src/config/conf_sd_mmc.h:
+
+../src/ASF/common/services/sleepmgr/sam/sleepmgr.h:
+
+../src/config/conf_sleepmgr.h:
+
+../src/ASF/common/services/sleepmgr/sleepmgr.h:
+
+../src/ASF/common/services/sleepmgr/sam/sleepmgr.h:
 
 ../src/ASF/common/utils/stdio/stdio_serial/stdio_serial.h:
 
