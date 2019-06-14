@@ -208,15 +208,23 @@ uint8_t bme280_validate_id(void){
 /**
  *  Handle Interrupcao botao 1
  */
+/*
 static void Button1_Handler(uint32_t id, uint32_t mask)
 {
   BaseType_t xHigherPriorityTaskWoken = pdFALSE;
   xSemaphoreGiveFromISR(xSemaphoreT, &xHigherPriorityTaskWoken);
-  BaseType_t xHigherPriorityTaskWoken2 = pdFALSE;
-  xSemaphoreGiveFromISR(xSemaphoreSD, &xHigherPriorityTaskWoken2);
+  //BaseType_t xHigherPriorityTaskWoken2 = pdFALSE;
+  //xSemaphoreGiveFromISR(xSemaphoreSD, &xHigherPriorityTaskWoken2);
   
-  pin_toggle(PIOD, (1<<28));
+  //pin_toggle(PIOD, (1<<28));
   pin_toggle(LED_PIO, LED_PIN_MASK);
+}*/
+
+void BUTTON1_callback(){
+	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+	xSemaphoreGiveFromISR(xSemaphoreT, &xHigherPriorityTaskWoken);
+	BaseType_t xHigherPriorityTaskWoken2 = pdFALSE;
+	xSemaphoreGiveFromISR(xSemaphoreSD, &xHigherPriorityTaskWoken2);
 }
 
 void RTC_Handler(void)
@@ -250,7 +258,7 @@ void RTC_Handler(void)
 #define TASK_TERMINAL_STACK_SIZE            (2*1024/sizeof(portSTACK_TYPE))
 #define TASK_TERMINAL_STACK_PRIORITY        (tskIDLE_PRIORITY)
 
-#define TASK_SDCARD_STACK_SIZE              (2*1024/sizeof(portSTACK_TYPE))
+#define TASK_SDCARD_STACK_SIZE              (4*1024/sizeof(portSTACK_TYPE))
 #define TASK_SDCARD_STACK_PRIORITY          (tskIDLE_PRIORITY)
 
 
@@ -299,13 +307,15 @@ void BUT_init(void){
     
     /* config. interrupcao em borda de descida no botao do kit */
     /* indica funcao (but_Handler) a ser chamada quando houver uma interrup??o */
-    pio_enable_interrupt(BUT_PIO, BUT_PIN_MASK);
-    pio_handler_set(BUT_PIO, BUT_PIO_ID, BUT_PIN_MASK, PIO_IT_FALL_EDGE, Button1_Handler);
+    
+    pio_handler_set(BUT_PIO, BUT_PIO_ID, BUT_PIN_MASK, PIO_IT_FALL_EDGE, BUTTON1_callback);
     
     /* habilita interrup?c?o do PIO que controla o botao */
     /* e configura sua prioridade                        */
     NVIC_EnableIRQ(BUT_PIO_ID);
-    NVIC_SetPriority(BUT_PIO_ID, 1);
+    NVIC_SetPriority(BUT_PIO_ID, 5);
+	pio_enable_interrupt(BUT_PIO, BUT_PIN_MASK);
+
 };
 
 /**
@@ -445,20 +455,28 @@ void task_sensor(void){
 }
 
 void task_terminal(void){				
-	int print_mode = 0;
+	int print_mode = 1;
 	char frase[6];
+	xSemaphoreT = xSemaphoreCreateBinary();
 	
 	while (true) {
 		//printf("TO no while t\r\n");
-		if( xSemaphoreTake(xSemaphoreT, ( TickType_t ) 10) == pdTRUE ){
-			//printf("OLAAAAAAAAAAAAAAAAAA\n");
-			print_mode = !print_mode;
-		}
-		if (xQueueReceive( xQueueTerminal, &(frase), ( TickType_t )  500 / portTICK_PERIOD_MS)) {
-			printf("%s\n", frase);
-		}
+		if(xSemaphoreTake(xSemaphoreT, ( TickType_t ) 0) == pdTRUE ){
+		 if (print_mode == 0){
+			 printf("PRINT_MODE\n\n");
+		  print_mode = 1;
+		  }else{
+			  printf("SAVE_MODE\n\n");
+			 print_mode = 0;
+		 }
+	  }
+		
+
 		if(print_mode){
-			//printf("PRINTANDO\r\n");
+			if (xQueueReceive( xQueueTerminal, &(frase), ( TickType_t )  500 / portTICK_PERIOD_MS)) {
+				printf("timestamp: %d\n",timestamp);
+				printf("%s\n", frase);
+					}
 		}
 		//printf("Starting ADC\n");
 		vTaskDelay(400);
@@ -467,6 +485,9 @@ void task_terminal(void){
 
 void task_sdcard(void){		
 	char test_file_name[] = "0:sd_mmc_test.txt";
+	char frase2[100];
+	char frase3[32];
+	xSemaphoreSD = xSemaphoreCreateBinary();
 	Ctrl_status status;
 	FRESULT res;
 	FATFS fs;
@@ -486,9 +507,6 @@ void task_sdcard(void){
 	
 	/* Initialize SD MMC stack */
 	sd_mmc_init();
-
-	printf("\x0C\n\r-- SD/MMC/SDIO Card Example on FatFs --\n\r");
-	printf("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
 	
 	uint written;
 	FIL fdst;
@@ -496,12 +514,9 @@ void task_sdcard(void){
 	int save_mode = 0;
 	
 	while (true) {
-		//printf("TO no while sd\r\n");
-		if( xSemaphoreTake(xSemaphoreSD, ( TickType_t ) 10) == pdTRUE ){
-			save_mode = !save_mode;
-		}
 		
-		if(save_mode){
+
+		
 			printf("Please plug an SD, MMC or SDIO card in slot.\n\r");
 
 			/* Wait card present and ready */
@@ -537,13 +552,27 @@ void task_sdcard(void){
 			main_end_of_test:
 			printf("Please unplug the card.\n\r");
 			while (CTRL_NO_PRESENT != sd_mmc_check(0)) {
+				
+				if(xSemaphoreTake(xSemaphoreSD, ( TickType_t ) 0) == pdTRUE ){
+						if (save_mode == 0){
+							save_mode = 1;
+							}else{
+							save_mode = 0;
+						}
+					}
+				if(save_mode){
 				printf("Write to test file (f_puts)...\r\n");
 				size = (&file_object)->fsize;
 				res = f_lseek(&file_object,size);
-				if (0 == f_write(&file_object, "Test SD/MMC stack\n", 18, &written)) {
-					f_close(&file_object);
-					printf("[FAIL]\r\n");
-					goto main_end_of_test;
+				if (xQueueReceive( xQueueSdcard, &(frase3), ( TickType_t )  500 / portTICK_PERIOD_MS)) {
+					sprintf(frase2,"Timestamp: %d\r\n %s\r\n",timestamp,frase3);
+					printf("frase2: \n\n\n\n");
+					printf(frase3);
+					if (0 == f_write(&file_object, frase2, 100, &written)) {
+						f_close(&file_object);
+						printf("[FAIL]\r\n");
+						goto main_end_of_test;
+				}
 				}
 				//written += 18;
 				printf("[OK]\r\n");
